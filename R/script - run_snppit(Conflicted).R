@@ -273,13 +273,16 @@ renameGenotypes = function(dataframe, LUT, not_genotypes=c()) {
 #' renameGenotype
 #' @keywords internal
 renameGenotype = function(dataframe, column, LUT=c("1"="1 1","2"="1 2","3"="2 2")){
-  genotype <- dataframe[[column]]
+  genotype <- dataframe[column] %>% as.character()
+
 
   col = LUT[genotype]
+  a <<- col
   col[is.na(col)] = "* *"
-
-
   dataframe[column] = col
+
+
+  stop("hei")
 
   return(dataframe)
 }
