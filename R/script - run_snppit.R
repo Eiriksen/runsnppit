@@ -110,11 +110,11 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
   message("Trying to obtain SNPPT results...")
   data_snppit = read.table("snppit_output_ParentageAssignments.txt", head=T, comment.char = "") %>%
     rename(ID_offspring=Kid, ID_pa=Pa, ID_ma=Ma, population=PopName)
-  save.data(data_snppit, filename)
+  readr::write_delim(data_snppit, filename, delim="\t")
 
   data_snppit_full = read.table("snppit_output_TrioPosteriors.txt", head=T, comment.char = "")  %>%
     rename(ID_offspring=Kid, ID_pa=Pa, ID_ma=Ma)
-  save.data(data_snppit_full, filename_full)
+  readr::write_delim(data_snppit_full, filename_full, delim="\t")
 
   # Return results
   message("results ready!")
