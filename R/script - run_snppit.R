@@ -46,12 +46,12 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
     message("{filename} already exsist, loading that instead of doing new SNPPT run.")
     message("Set argument overwrite=T if you want to do a new analysis and overwrite old file.")
     if (!full){
-      data_snppit = read.data(filename)
+      data_snppit = read_delim(filename)
       setwd(oldwd)
       return(data_snppit)
     }
     else{
-      data_snppit = read.data(filename_full)
+      data_snppit = read_delim(filename_full)
       setwd(oldwd)
       return(data_snppit)
     }
