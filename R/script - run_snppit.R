@@ -30,7 +30,9 @@
 #' @export
 #' @examples parentage_data <- run_snppt(offspring, parents, "Project_oct2019")
 run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrite=F, useGroups=F, full=F){
-
+  require(glue)
+  require(tidyverse)
+  
   oldwd = getwd()
   setwd(paste(oldwd,"/snppit",sep=""))
 
