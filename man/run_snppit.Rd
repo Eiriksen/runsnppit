@@ -2,11 +2,7 @@
 % Please edit documentation in R/script - run_snppit.R
 \name{run_snppit}
 \alias{run_snppit}
-\title{Parentage analysis (using SNPPT.exe)
-#'
-Function that simplifies using SNPPT.exe to calculate parentage based on SNP data
-Requires that snppt.exe is installed in the working directory of this file!
-More info at: https://swfsc.noaa.gov/textblock.aspx?Division=FED&ParentMenuId=54&id=16021}
+\title{Parentage analysis (using SNPPT.exe)}
 \usage{
 run_snppit(
   df_offspring,
@@ -18,7 +14,7 @@ run_snppit(
 )
 }
 \arguments{
-\item{df_offspring}{Data frame contaning offspring ID's and SNP genotypes (see above)}
+\item{df_offspring}{Data frame contaning offspring ID's and SNP genotypes (see below)}
 
 \item{df_parents}{Data frame containing parent ID's, sex, population, and SNP genotypes (see above)}
 
@@ -29,14 +25,16 @@ run_snppit(
 \item{useGroups}{Optional. If parent grups should be used, only parents within the same group will be considered as parents together.}
 }
 \description{
-Download snppit here: https://github.com/eriqande/snppit
-Extract the zip-file, rename the "snppit-master" folder to "snppit", and place the folder in the same working directory as this script.
+Function that simplifies using SNPPT.exe to calculate parentage based on SNP data
+Requires that snppt.exe is installed in the working directory of this file!
+More info at: https://swfsc.noaa.gov/textblock.aspx?Division=FED&ParentMenuId=54&id=16021
 }
 \details{
-Then you're ready! Usually, to run snppit, you need to prepare a specially formatted genpop file with your offspring and parent data SNP data,
-then run snppit via the command line. This r function saves you some time by doing the genpop formatting and command line stuff for you, in R.
+Download snppit here: https://github.com/eriqande/snppit
+Extract the zip-file, rename the "snppit-master" folder to "snppit", and place the folder in the same working directory as this script.
+Then you're ready! Usually, to run snppit, you need to prepare a specially formatted genpop file with your offspring and parent SNP data,
+and then run snppit via the command line. This r function saves you some time by doing the genpop formatting and command line stuff for you in R.
 All you need to do is to supply the function with two datasets: parents and offspring, and the function will return the resulting parentage analysis ready to use in R.
-
 The function takes two datasets as parameters, one for offspring and one for parents. \cr
 Both datasets must be formated as folows:
 \itemize{
