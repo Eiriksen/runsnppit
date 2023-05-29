@@ -36,7 +36,7 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
   require(tidyverse)
   
   # if run==F, skip the following part, which deals with directory changes and with checking previous runs
-  if (run==F){
+  if (run==T){
     oldwd = getwd()
     setwd(paste(oldwd,"/snppit",sep=""))
   
