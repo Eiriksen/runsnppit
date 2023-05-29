@@ -10,7 +10,8 @@ run_snppit(
   projectName = "project1",
   overwrite = F,
   useGroups = F,
-  full = F
+  full = F,
+  run = T
 )
 }
 \arguments{
@@ -23,6 +24,10 @@ run_snppit(
 \item{overwrite}{Optional. If the script should overwrite any older snppit analysis (or read the old one again instead of re-doing it)}
 
 \item{useGroups}{Optional. If parent grups should be used, only parents within the same group will be considered as parents together.}
+
+\item{full}{Optional. Set to T if you want the full snppit result file, otherwise you get a simplified one.}
+
+\item{run}{Optional. Set to T if you don't want to run snppit but only create the popgen file}
 }
 \description{
 Function that simplifies using SNPPT.exe to calculate parentage based on SNP data

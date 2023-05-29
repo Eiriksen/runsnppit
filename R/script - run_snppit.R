@@ -26,38 +26,42 @@
 #' @param df_parents Data frame containing parent ID's, sex, population, and SNP genotypes (see above)
 #' @param projectName Optional. A name that will be used for files created during the proces
 #' @param overwrite Optional. If the script should overwrite any older snppit analysis (or read the old one again instead of re-doing it)
+#' @param full Optional. Set to T if you want the full snppit result file, otherwise you get a simplified one. 
 #' @param useGroups Optional. If parent grups should be used, only parents within the same group will be considered as parents together.
+#' @param run Optional. Set to T if you don't want to run snppit but only create the popgen file
 #' @export
 #' @examples parentage_data <- run_snppt(offspring, parents, "Project_oct2019")
-run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrite=F, useGroups=F, full=F){
+run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrite=F, useGroups=F, full=F, run=T){
   require(glue)
   require(tidyverse)
   
-  oldwd = getwd()
-  setwd(paste(oldwd,"/snppit",sep=""))
-
-  filename = glue("snppit_output_ParentageAssignments - {projectName}.csv")
-  filename_full = glue("snppit_output_TrioPosteriors - {projectName}.csv")
-
-  Sys.sleep(1)
-
-  # First: check if this analysis has maybe already been done, if so, ask the user if she wants to skip it and load data from the previous run
-  if (file.exists(filename) & overwrite==F){
-    message("{filename} already exsist, loading that instead of doing new SNPPT run.")
-    message("Set argument overwrite=T if you want to do a new analysis and overwrite old file.")
-    if (!full){
-      data_snppit = read_delim(filename)
-      setwd(oldwd)
-      return(data_snppit)
+  # if run==F, skip the following part, which deals with directory changes and with checking previous runs
+  if (run==F){
+    oldwd = getwd()
+    setwd(paste(oldwd,"/snppit",sep=""))
+  
+    filename = glue("snppit_output_ParentageAssignments - {projectName}.csv")
+    filename_full = glue("snppit_output_TrioPosteriors - {projectName}.csv")
+  
+    Sys.sleep(1)
+  
+    # First: check if this analysis has maybe already been done, if so, ask the user if she wants to skip it and load data from the previous run
+    if (file.exists(filename) & overwrite==F){
+      message("{filename} already exsist, loading that instead of doing new SNPPT run.")
+      message("Set argument overwrite=T if you want to do a new analysis and overwrite old file.")
+      if (!full){
+        data_snppit = read_delim(filename)
+        setwd(oldwd)
+        return(data_snppit)
+      }
+      else{
+        data_snppit = read_delim(filename_full)
+        setwd(oldwd)
+        return(data_snppit)
+      }
+  
     }
-    else{
-      data_snppit = read_delim(filename_full)
-      setwd(oldwd)
-      return(data_snppit)
-    }
-
   }
-
   check_columns <- function(tb,cols,name){
     missing <- cols[!cols %in% names(tb)]
     if (length(missing) > 0) stop(glue::glue("{name} missing columns {missing}"))
@@ -100,6 +104,9 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
   SNPPITfile(snpptfile_name,df_parents, df_offspring, parentGroup=useGroups)
   message("SNPPT settings file written!")
 
+    # stop here if RUN is set to F
+  if (run==F) return()
+  
   # Run snppit
   message("Starting SNPPT analysis...")
   location = paste("'",getwd(),"'",sep="") %>% str_replace_all("/","\\\\")
@@ -123,58 +130,6 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
   if (full) return(data_snppit_full)
   else return(data_snppit)
 }
-
-
-#' Make snppit popgen file 
-#' 
-#' functions similarily to run_snppit, but only creates the popgen file and does not run snppit.exe
-#' @export
-make_snppit_file <- function(df_offspring, df_parents, projectName="undefined_project", useGroups=F){
-  require(glue)
-  require(tidyverse)
-  
-  check_columns <- function(tb,cols,name){
-    missing <- cols[!cols %in% names(tb)]
-    if (length(missing) > 0) stop(glue::glue("{name} missing columns {missing}"))
-  }
-  
-  # Check that the parent set has columns "ID", "Sex", "population" and "group"
-  if(useGroups==T)  check_columns(df_parents,c("ID","sex","population","group"),"df_parents")
-  else check_columns(df_parents,c("ID","sex","population"),"df_parents")
-  
-  check_columns(df_offspring,c("ID"),"df_offspring")
-  
-  # Convert the genotype data in the dataset from normal numeric to snppt numeric type
-  if (useGroups==T) {
-    df_parents = df_parents %>%
-      renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID","sex","population","group"))
-    df_parents["group"][is.na(df_parents["group"])] <- "?"
-  }
-  else {
-    df_parents = df_parents %>%
-      renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID","sex","population"))
-  }
-  
-  df_offspring = df_offspring %>%
-    renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID"))
-  
-  # remove any column that is not equal between parents and offspring dataset (except population and sex and group)
-  
-  if (useGroups==T)  df_parents <- df_parents %>% select( "ID","population","sex","group", df_offspring %>% names() %>% one_of() )
-  else               df_parents <- df_parents %>% select( "ID","population","sex", df_offspring %>% names() %>% one_of() )
-  
-  df_offspring <- df_offspring %>% select( "ID", df_parents %>% names() %>% one_of() )
-  
-  #Filename to use for snpptfile
-  snpptfile_name = paste("snpptfile -", projectName)
-  
-  #Write SNPPIT file based on parent and offspring data
-  message("Attempting to write SNPPT settings file...")
-  SNPPITfile(snpptfile_name,df_parents, df_offspring, parentGroup=useGroups)
-  message("SNPPT settings file written!")
- 
-}
-
 
 
 
