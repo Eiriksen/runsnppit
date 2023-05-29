@@ -124,6 +124,60 @@ run_snppit <- function(df_offspring, df_parents, projectName="project1",overwrit
   else return(data_snppit)
 }
 
+
+#' Make snppit popgen file 
+#' 
+#' functions similarily to run_snppit, but only creates the popgen file and does not run snppit.exe
+#' @export
+make_snppit_file <- function(df_offspring, df_parents, projectName="undefined_project", useGroups=F){
+  require(glue)
+  require(tidyverse)
+  
+  check_columns <- function(tb,cols,name){
+    missing <- cols[!cols %in% names(tb)]
+    if (length(missing) > 0) stop(glue::glue("{name} missing columns {missing}"))
+  }
+  
+  # Check that the parent set has columns "ID", "Sex", "population" and "group"
+  if(useGroups==T)  check_columns(df_parents,c("ID","sex","population","group"),"df_parents")
+  else check_columns(df_parents,c("ID","sex","population"),"df_parents")
+  
+  check_columns(df_offspring,c("ID"),"df_offspring")
+  
+  # Convert the genotype data in the dataset from normal numeric to snppt numeric type
+  if (useGroups==T) {
+    df_parents = df_parents %>%
+      renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID","sex","population","group"))
+    df_parents["group"][is.na(df_parents["group"])] <- "?"
+  }
+  else {
+    df_parents = df_parents %>%
+      renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID","sex","population"))
+  }
+  
+  df_offspring = df_offspring %>%
+    renameGenotypes(LUT=c("1"="1 1","2"="1 2","3"="2 2"), not_genotypes=c("ID"))
+  
+  # remove any column that is not equal between parents and offspring dataset (except population and sex and group)
+  
+  if (useGroups==T)  df_parents <- df_parents %>% select( "ID","population","sex","group", df_offspring %>% names() %>% one_of() )
+  else               df_parents <- df_parents %>% select( "ID","population","sex", df_offspring %>% names() %>% one_of() )
+  
+  df_offspring <- df_offspring %>% select( "ID", df_parents %>% names() %>% one_of() )
+  
+  #Filename to use for snpptfile
+  snpptfile_name = paste("snpptfile -", projectName)
+  
+  #Write SNPPIT file based on parent and offspring data
+  message("Attempting to write SNPPT settings file...")
+  SNPPITfile(snpptfile_name,df_parents, df_offspring, parentGroup=useGroups)
+  message("SNPPT settings file written!")
+ 
+}
+
+
+
+
 #' SNPPITfile
 #' @keywords internal
 SNPPITfile = function(name,parents,offspring,parentSex=T,parentPopulation=T,parentGroup=T){
@@ -193,7 +247,7 @@ SNPPITfile = function(name,parents,offspring,parentSex=T,parentPopulation=T,pare
 
 
 #' SNPPITfile
-#' @keywords internal
+#' @export
 format.snpptFile = function(name,df_parents,df_offspring,parentSex=T,parentPopulation=T,parentGroup=T){
   # ASSUMES the following names for columns:
   # IDs:        "ID"         (string, no whitespace)
@@ -261,7 +315,7 @@ format.snpptFile = function(name,df_parents,df_offspring,parentSex=T,parentPopul
 #' Rename genotypes based on a lookup table
 #'
 #' In a dataframe, rename genotype columns
-#' @keywords internal
+#' @export
 renameGenotypes = function(dataframe, LUT, not_genotypes=c()) {
   for (i in names(dataframe %>% select(-c(not_genotypes)))) {
     dataframe <- dataframe %>% renameGenotype(i, LUT)
