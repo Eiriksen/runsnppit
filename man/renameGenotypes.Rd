@@ -9,4 +9,3 @@ renameGenotypes(dataframe, LUT, not_genotypes = c())
 \description{
 In a dataframe, rename genotype columns
 }
-\keyword{internal}

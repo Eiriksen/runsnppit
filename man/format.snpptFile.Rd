@@ -16,4 +16,3 @@
 \description{
 SNPPITfile
 }
-\keyword{internal}
